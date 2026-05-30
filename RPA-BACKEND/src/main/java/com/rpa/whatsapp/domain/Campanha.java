@@ -33,6 +33,9 @@ public class Campanha {
   @Column(nullable = false)
   private String nome;
 
+  @Column(nullable = false)
+  private String mensagemTemplate;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private CampanhaStatus status;

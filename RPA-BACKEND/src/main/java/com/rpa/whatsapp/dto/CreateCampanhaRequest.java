@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateCampanhaRequest {
   private String nome;
+  private String mensagem;
   private List<ContatoRequest> contatos;
 }

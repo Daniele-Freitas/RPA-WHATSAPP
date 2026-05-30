@@ -2,7 +2,10 @@ package com.rpa.whatsapp.domain;
 
 import java.util.UUID;
 import org.hibernate.annotations.UuidGenerator;
+import java.util.Map;
+import com.rpa.whatsapp.persistence.JsonMapConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -32,11 +35,15 @@ public class Contato {
   @UuidGenerator
   private UUID id;
 
+  @Column
+  private String nome;
+
   @Column(nullable = false)
   private String telefone;
 
-  @Column(nullable = false)
-  private String mensagemFormatada;
+  @Convert(converter = JsonMapConverter.class)
+  @Column(columnDefinition = "jsonb")
+  private Map<String, String> variaveis;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

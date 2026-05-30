@@ -1,5 +1,6 @@
 package com.rpa.whatsapp.dto;
 
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ContatoRequest {
+  private String nome;
   private String telefone;
-  private String mensagemFormatada;
+  private Map<String, String> variaveis;
 }

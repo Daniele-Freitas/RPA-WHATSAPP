@@ -18,6 +18,7 @@ import com.rpa.whatsapp.dto.CreateCampanhaRequest;
 import com.rpa.whatsapp.dto.ContatoRequest;
 import com.rpa.whatsapp.repository.CampanhaRepository;
 import com.rpa.whatsapp.repository.ContatoRepository;
+import com.rpa.whatsapp.service.ContatoService;
 import com.rpa.whatsapp.service.RabbitMQSender;
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +29,7 @@ public class CampanhaController {
 
   private final CampanhaRepository campanhaRepository;
   private final ContatoRepository contatoRepository;
+    private final ContatoService contatoService;
   private final RabbitMQSender rabbitMQSender;
 
   /**
@@ -38,14 +40,21 @@ public class CampanhaController {
    * Body (JSON):
    * {
    *   "nome": "Campanha Teste - Mai 2026",
+    *   "mensagem": "{{saudacao}}, {{primeiro_nome}} tudo bem?",
    *   "contatos": [
    *     {
-   *       "telefone": "5511999999999",
-   *       "mensagemFormatada": "Olá! Esta é uma mensagem de teste 1."
+    *       "nome": "Maria Silva",
+     *       "telefone": "5511999999999",
+     *       "variaveis": {
+     *         "primeiro_nome": "Maria"
+     *       }
    *     },
    *     {
-   *       "telefone": "5511888888888",
-   *       "mensagemFormatada": "Olá! Esta é uma mensagem de teste 2."
+    *       "nome": "João Souza",
+     *       "telefone": "5511888888888",
+     *       "variaveis": {
+     *         "primeiro_nome": "João"
+     *       }
    *     }
    *   ]
    * }
@@ -56,32 +65,53 @@ public class CampanhaController {
    * }
    */
   @PostMapping
-  public ResponseEntity<Map<String, UUID>> criar(@RequestBody CreateCampanhaRequest request) {
-    Campanha campanha = Campanha.builder()
-        .nome(request.getNome())
-        .status(CampanhaStatus.PENDENTE)
-        .dataCriacao(LocalDateTime.now())
-        .build();
+  public ResponseEntity<Map<String, Object>> criar(@RequestBody CreateCampanhaRequest request) {
+    if (request == null || request.getNome() == null || request.getNome().isBlank()) {
+      return ResponseEntity.badRequest()
+          .body(Map.of("erro", "Nome da campanha é obrigatório"));
+    }
 
-    Campanha campanhaSalva = campanhaRepository.save(campanha);
+    if (request.getMensagem() == null || request.getMensagem().isBlank()) {
+      return ResponseEntity.badRequest()
+          .body(Map.of("erro", "Mensagem da campanha é obrigatória"));
+    }
 
     List<ContatoRequest> contatosRequest = request.getContatos() == null
         ? List.of()
         : request.getContatos();
 
+    if (contatosRequest.isEmpty()) {
+      return ResponseEntity.badRequest()
+          .body(Map.of("erro", "Lista de contatos é obrigatória"));
+    }
+
+    List<String> telefonesInvalidos = contatoService.listarTelefonesInvalidos(contatosRequest);
+    if (!telefonesInvalidos.isEmpty()) {
+      return ResponseEntity.badRequest()
+          .body(Map.of(
+              "erro", "Telefones inválidos",
+              "telefonesInvalidos", telefonesInvalidos));
+    }
+
+    Campanha campanha = Campanha.builder()
+      .nome(request.getNome())
+      .mensagemTemplate(request.getMensagem())
+      .status(CampanhaStatus.PENDENTE)
+      .dataCriacao(LocalDateTime.now())
+      .build();
+
+    Campanha campanhaSalva = campanhaRepository.save(campanha);
+
     List<Contato> contatos = contatosRequest.stream()
-        .map(contato -> Contato.builder()
-            .telefone(contato.getTelefone())
-            .mensagemFormatada(contato.getMensagemFormatada())
-            .statusEnvio(StatusEnvio.PENDENTE)
-            .campanha(campanhaSalva)
-            .build())
+      .map(contato -> contatoService.criarContato(contato, campanhaSalva))
         .toList();
 
     List<Contato> contatosSalvos = contatoRepository.saveAll(contatos);
     rabbitMQSender.publishContatos(contatosSalvos);
 
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(Map.of("id", campanhaSalva.getId()));
+        .body(Map.of(
+            "id", campanhaSalva.getId(),
+            "contatos", contatosSalvos.size()));
   }
 }

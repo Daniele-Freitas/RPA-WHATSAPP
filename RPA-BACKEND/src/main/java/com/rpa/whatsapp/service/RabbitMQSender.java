@@ -18,13 +18,17 @@ public class RabbitMQSender {
 
   private final ObjectMapper objectMapper;
 
+  private final MensagemTemplateService mensagemTemplateService;
+
   public void publishContatos(List<Contato> contatos) {
     for (Contato contato : contatos) {
+      String template = contato.getCampanha().getMensagemTemplate();
+      String mensagem = mensagemTemplateService.render(template, contato.getVariaveis());
       ContatoMessage payload = new ContatoMessage(
           contato.getId(),
           contato.getCampanha().getId(),
           contato.getTelefone(),
-          contato.getMensagemFormatada());
+          mensagem);
       rabbitTemplate.convertAndSend(RabbitMQConfig.WHATSAPP_JOBS_QUEUE, toJson(payload));
     }
   }
