@@ -1,0 +1,33 @@
+{
+  "info": {
+    "name": "RPA WhatsApp API",
+    "description": "Coleção de requisições para testar a API RPA",
+    "version": "1.0"
+  },
+  "request": [
+    {
+      "name": "Criar Campanha",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/campanhas",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "campanhas"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Campanha Teste - Mai 2026\",\n  \"contatos\": [\n    {\n      \"telefone\": \"5511999999999\",\n      \"mensagemFormatada\": \"Olá! Esta é uma mensagem de teste 1.\"\n    },\n    {\n      \"telefone\": \"5511888888888\",\n      \"mensagemFormatada\": \"Olá! Esta é uma mensagem de teste 2.\"\n    },\n    {\n      \"telefone\": \"5511777777777\",\n      \"mensagemFormatada\": \"Olá! Esta é uma mensagem de teste 3.\"\n    }\n  ]\n}"
+        }
+      },
+      "response": []
+    }
+  ]
+}

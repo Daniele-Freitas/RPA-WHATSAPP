@@ -1,0 +1,141 @@
+# Java / Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+.mvn/
+*.jar
+*.war
+*.zip
+*.tar.gz
+*.rar
+
+# IDE - IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+*.ids
+*.orig
+
+# IDE - Eclipse
+.eclipse/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/
+*.code-workspace
+
+# IDE - Sublime
+*.sublime-project
+
+# Compilation
+*.pyc
+*.pyo
+*.class
+.gradle/
+build/
+dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime
+tmp/
+temp/
+*.lock
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.example
+
+# Dependencies
+node_modules/
+.npm/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Git
+.gitignore.orig
+
+# Misc
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.classpath
+.cproject
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Node
+.node_modules/
+dist/
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Specific project files
+RPA-BACKEND/target/
+RPA-BACKEND/.classpath
+RPA-BACKEND/.settings/
+
+RPA-CONSUMER/dist/
+RPA-CONSUMER/node_modules/
+RPA-CONSUMER/.env
+
+RPA-FRONT/dist/
+RPA-FRONT/build/
+RPA-FRONT/node_modules/
+RPA-FRONT/.env
+
+# Docker volumes
+postgres_data/
+rabbitmq_data/
+
+# IDE vscode local history
+.history/
+.ionide/
+
+# Database dumps
+*.sql
+*.sql.gz
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Lock files (opcional - descomente se quiser versioná-los)
+# package-lock.json
+# pom.xml.versionsBackup
