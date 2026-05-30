@@ -24,7 +24,7 @@
         },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nome\": \"Campanha Teste - Mai 2026\",\n  \"contatos\": [\n    {\n      \"telefone\": \"5511999999999\",\n      \"mensagemFormatada\": \"Olá! Esta é uma mensagem de teste 1.\"\n    },\n    {\n      \"telefone\": \"5511888888888\",\n      \"mensagemFormatada\": \"Olá! Esta é uma mensagem de teste 2.\"\n    },\n    {\n      \"telefone\": \"5511777777777\",\n      \"mensagemFormatada\": \"Olá! Esta é uma mensagem de teste 3.\"\n    }\n  ]\n}"
+          "raw": "{\n  \"nome\": \"Campanha Teste - Mai 2026\",\n  \"mensagem\": \"{{saudacao}}, {{primeiro_nome}} tudo bem?\",\n  \"contatos\": [\n    {\n      \"nome\": \"Maria Silva\",\n      \"telefone\": \"5511999999999\",\n      \"variaveis\": {\n        \"primeiro_nome\": \"Maria\"\n      }\n    },\n    {\n      \"nome\": \"João Souza\",\n      \"telefone\": \"5511888888888\",\n      \"variaveis\": {\n        \"primeiro_nome\": \"João\"\n      }\n    }\n  ]\n}"
         }
       },
       "response": []
