@@ -30,6 +30,31 @@
       "response": []
     },
     {
+      "name": "Preview CSV",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "arquivo",
+              "type": "file",
+              "src": "contatos.csv"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/campanhas/preview-csv",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "campanhas", "preview-csv"]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Importar CSV",
       "request": {
         "method": "POST",
