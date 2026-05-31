@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.csv.CSVFormat;
@@ -14,10 +15,44 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.rpa.whatsapp.dto.CampanhaCsvImportRequest;
+import com.rpa.whatsapp.dto.CsvPreviewResponse;
 import com.rpa.whatsapp.dto.ContatoRequest;
 
 @Service
 public class CsvContatoParser {
+
+  public CsvPreviewResponse preview(MultipartFile arquivo, int maxAmostras) {
+    if (arquivo == null || arquivo.isEmpty()) {
+      throw new IllegalArgumentException("Arquivo CSV é obrigatório");
+    }
+
+    int limite = maxAmostras <= 0 ? 5 : maxAmostras;
+
+    try (BufferedReader reader = new BufferedReader(
+        new InputStreamReader(arquivo.getInputStream(), StandardCharsets.UTF_8));
+        CSVParser parser = CSVFormat.DEFAULT.builder()
+            .setHeader()
+            .setSkipHeaderRecord(true)
+            .setTrim(true)
+            .build()
+            .parse(reader)) {
+
+      List<String> colunas = new ArrayList<>(parser.getHeaderMap().keySet());
+      List<Map<String, String>> amostras = new ArrayList<>();
+      int total = 0;
+
+      for (CSVRecord record : parser) {
+        total++;
+        if (amostras.size() < limite) {
+          amostras.add(mapearLinha(record, colunas));
+        }
+      }
+
+      return new CsvPreviewResponse(colunas, amostras, total);
+    } catch (IOException ex) {
+      throw new IllegalArgumentException("Falha ao ler arquivo CSV", ex);
+    }
+  }
 
   public List<ContatoRequest> parse(MultipartFile arquivo, CampanhaCsvImportRequest config) {
     if (arquivo == null || arquivo.isEmpty()) {
@@ -92,6 +127,15 @@ public class CsvContatoParser {
     }
 
     return new ContatoRequest(nome, telefone, variaveis);
+  }
+
+  private Map<String, String> mapearLinha(CSVRecord record, List<String> colunas) {
+    Map<String, String> linha = new LinkedHashMap<>();
+    for (String coluna : colunas) {
+      linha.put(coluna, obterValor(record, coluna));
+    }
+
+    return linha;
   }
 
   private String obterValor(CSVRecord record, String coluna) {
