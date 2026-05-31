@@ -28,6 +28,36 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "Importar CSV",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "arquivo",
+              "type": "file",
+              "src": "contatos.csv"
+            },
+            {
+              "key": "config",
+              "type": "text",
+              "value": "{\n  \"nome\": \"Campanha CSV\",\n  \"mensagem\": \"{{saudacao}}, {{primeiro_nome}} tudo bem?\",\n  \"colunaTelefone\": \"Telefone\",\n  \"colunaNome\": \"Nome\",\n  \"colunasVariaveis\": {\n    \"primeiro_nome\": \"PrimeiroNome\",\n    \"empreendimento\": \"Projeto\"\n  }\n}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/campanhas/importar-csv",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "campanhas", "importar-csv"]
+        }
+      },
+      "response": []
     }
   ]
 }
