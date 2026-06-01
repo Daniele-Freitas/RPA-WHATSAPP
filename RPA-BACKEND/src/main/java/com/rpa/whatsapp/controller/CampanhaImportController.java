@@ -7,15 +7,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import java.util.List;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rpa.whatsapp.dto.CampanhaCsvImportRequest;
 import com.rpa.whatsapp.dto.CampanhaCsvImportResponse;
-import com.rpa.whatsapp.dto.CsvPreviewResponse;
 import com.rpa.whatsapp.service.CampanhaImportService;
-import com.rpa.whatsapp.service.CsvContatoParser;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -24,40 +21,14 @@ import lombok.RequiredArgsConstructor;
 public class CampanhaImportController {
 
   private final CampanhaImportService campanhaImportService;
-  private final CsvContatoParser csvContatoParser;
-
-  /**
-   * POST /api/campanhas/preview-csv
-   * 
-   * Form-data:
-   * - arquivo: (file) contatos.csv
-   * 
-   * Response (200 OK):
-   * {
-   *   "colunas": ["Nome", "Telefone", "Projeto"],
-   *   "amostras": [
-   *     { "Nome": "Maria", "Telefone": "5511999999999", "Projeto": "Alpha" }
-   *   ],
-   *   "total": 120
-   * }
-   */
-  @PostMapping(value = "/preview-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<CsvPreviewResponse> previewCsv(
-      @RequestPart("arquivo") MultipartFile arquivo,
-      @RequestParam(name = "amostras", defaultValue = "5") int amostras) {
-    try {
-      return ResponseEntity.ok(csvContatoParser.preview(arquivo, amostras));
-    } catch (IllegalArgumentException ex) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage(), ex);
-    }
-  }
+  private final ObjectMapper objectMapper;
 
   /**
    * POST /api/campanhas/importar-csv
    * 
    * Form-data:
    * - arquivo: (file) contatos.csv
-   * - config: (application/json)
+   * - config: (text) JSON configuração
    * {
    *   "nome": "Campanha CSV",
    *   "mensagem": "{{saudacao}}, {{primeiro_nome}} tudo bem?",
@@ -72,22 +43,32 @@ public class CampanhaImportController {
   @PostMapping(value = "/importar-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<CampanhaCsvImportResponse> importarCsv(
       @RequestPart("arquivo") MultipartFile arquivo,
-      @RequestPart("config") CampanhaCsvImportRequest request) {
-    if (request == null || request.getNome() == null || request.getNome().isBlank()) {
+      @RequestPart("config") String configJson) {
+    
+    try {
+      // Parse JSON string para objeto
+      CampanhaCsvImportRequest request = objectMapper.readValue(configJson, CampanhaCsvImportRequest.class);
+      
+      if (request == null || request.getNome() == null || request.getNome().isBlank()) {
+        return ResponseEntity.badRequest()
+            .body(new CampanhaCsvImportResponse(null, 0, 0, List.of("Nome da campanha é obrigatório")));
+      }
+
+      if (request.getMensagem() == null || request.getMensagem().isBlank()) {
+        return ResponseEntity.badRequest()
+            .body(new CampanhaCsvImportResponse(null, 0, 0, List.of("Mensagem é obrigatória")));
+      }
+
+      CampanhaCsvImportResponse response = campanhaImportService.importar(arquivo, request);
+      if (response.getTelefonesInvalidos() != null && !response.getTelefonesInvalidos().isEmpty()) {
+        return ResponseEntity.badRequest().body(response);
+      }
+
+      return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    } catch (Exception ex) {
       return ResponseEntity.badRequest()
-          .body(new CampanhaCsvImportResponse(null, 0, 0, List.of("Nome da campanha é obrigatório")));
+          .body(new CampanhaCsvImportResponse(null, 0, 0, 
+              List.of("Erro ao parsear JSON: " + ex.getMessage())));
     }
-
-    if (request.getMensagem() == null || request.getMensagem().isBlank()) {
-      return ResponseEntity.badRequest()
-          .body(new CampanhaCsvImportResponse(null, 0, 0, List.of("Mensagem é obrigatória")));
-    }
-
-    CampanhaCsvImportResponse response = campanhaImportService.importar(arquivo, request);
-    if (response.getTelefonesInvalidos() != null && !response.getTelefonesInvalidos().isEmpty()) {
-      return ResponseEntity.badRequest().body(response);
-    }
-
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 }
