@@ -20,11 +20,15 @@ import com.rpa.whatsapp.repository.CampanhaRepository;
 import com.rpa.whatsapp.repository.ContatoRepository;
 import com.rpa.whatsapp.service.ContatoService;
 import com.rpa.whatsapp.service.RabbitMQSender;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/campanhas")
 @RequiredArgsConstructor
+@Tag(name = "Campanhas", description = "Endpoints para gerenciamento e disparo de mensagens no WhatsApp")
 public class CampanhaController {
 
   private final CampanhaRepository campanhaRepository;
@@ -65,6 +69,7 @@ public class CampanhaController {
    * }
    */
   @PostMapping
+  @Operation(summary = "Criar nova campanha", description = "Recebe uma lista de contatos e um template, e enfileira no RabbitMQ para processamento.")
   public ResponseEntity<Map<String, Object>> criar(@RequestBody CreateCampanhaRequest request) {
     if (request == null || request.getNome() == null || request.getNome().isBlank()) {
       return ResponseEntity.badRequest()
