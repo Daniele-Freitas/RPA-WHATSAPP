@@ -5,6 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.rpa.whatsapp.dto.CampanhaCsvPreviewResponse;
@@ -33,8 +37,11 @@ public class CampanhaPreviewController {
    * }
    */
   @PostMapping(value = "/preview-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @Operation(summary = "Preview CSV", description = "Retorna colunas e amostras do CSV.")
+  @ApiResponse(responseCode = "200", description = "Preview gerado",
+    content = @Content(schema = @Schema(implementation = CampanhaCsvPreviewResponse.class)))
   public ResponseEntity<CampanhaCsvPreviewResponse> previewCsv(
-      @RequestPart("arquivo") MultipartFile arquivo) {
+      @RequestPart("arquivo") @io.swagger.v3.oas.annotations.Parameter(description = "Arquivo CSV para análise") MultipartFile arquivo) {
     if (arquivo == null || arquivo.isEmpty()) {
       return ResponseEntity.badRequest().build();
     }

@@ -390,16 +390,9 @@ Verifique se application-{profile}.properties existe em src/main/resources/
 3. Faça push: `git push origin feature/sua-feature`
 4. Abra um Pull Request
 
-## 📄 Licença
-
-MIT License - Veja [LICENSE](./LICENSE) para detalhes.
-
 ## 📞 Suporte
 
 Para dúvidas ou problemas:
 - Abra uma issue no GitHub
 - Entre em contato via email
-
 ---
-
-**Desenvolvido com ❤️ por [Sua Equipe]**

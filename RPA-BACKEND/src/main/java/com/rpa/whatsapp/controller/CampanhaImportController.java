@@ -6,6 +6,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.Parameter;
 import java.util.List;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,9 +47,16 @@ public class CampanhaImportController {
    * }
    */
   @PostMapping(value = "/importar-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @Operation(summary = "Importar campanha via CSV",
+             description = "Recebe multipart: arquivo CSV + config JSON (CampanhaCsvImportRequest). Retorna CampanhaCsvImportResponse.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "201", description = "Campanha criada",
+      content = @Content(schema = @Schema(implementation = CampanhaCsvImportResponse.class))),
+    @ApiResponse(responseCode = "400", description = "Erros de validação", content = @Content)
+  })
   public ResponseEntity<CampanhaCsvImportResponse> importarCsv(
-      @RequestPart("arquivo") MultipartFile arquivo,
-      @RequestPart("config") String configJson) {
+      @RequestPart("arquivo") @Parameter(description = "Arquivo CSV contendo contatos") MultipartFile arquivo,
+      @RequestPart("config") @Parameter(description = "Config JSON com nome, mensagem e mapeamentos (CampanhaCsvImportRequest)") String configJson) {
     
     try {
       // Parse JSON string para objeto

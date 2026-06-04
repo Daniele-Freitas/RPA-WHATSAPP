@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.rpa.whatsapp.domain.Contato;
 import com.rpa.whatsapp.dto.ContatoStatusUpdateRequest;
 import com.rpa.whatsapp.repository.ContatoRepository;
@@ -31,10 +35,12 @@ public class ContatoController {
    * 
    * Response (204 No Content)
    */
-  @PatchMapping("/{id}/status")
-  public ResponseEntity<Void> atualizarStatus(
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Atualizar status do contato", description = "Atualiza o campo statusEnvio do contato.")
+    @ApiResponse(responseCode = "204", description = "Status atualizado", content = @Content)
+    public ResponseEntity<Void> atualizarStatus(
       @PathVariable UUID id,
-      @RequestBody ContatoStatusUpdateRequest request) {
+      @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Novo status do contato", content = @Content(schema = @Schema(implementation = ContatoStatusUpdateRequest.class))) ContatoStatusUpdateRequest request) {
     if (request == null || request.getStatusEnvio() == null) {
       return ResponseEntity.badRequest().build();
     }
