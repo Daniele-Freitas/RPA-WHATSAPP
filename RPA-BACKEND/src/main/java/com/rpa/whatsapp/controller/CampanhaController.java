@@ -33,7 +33,7 @@ public class CampanhaController {
 
   private final CampanhaRepository campanhaRepository;
   private final ContatoRepository contatoRepository;
-    private final ContatoService contatoService;
+  private final ContatoService contatoService;
   private final RabbitMQSender rabbitMQSender;
 
   /**

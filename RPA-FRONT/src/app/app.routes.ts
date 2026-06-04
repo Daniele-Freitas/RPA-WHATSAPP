@@ -5,7 +5,7 @@ export const routes: Routes = [
         path: '',
         title: 'Criação de Campanha',
         pathMatch: 'full',
-        loadComponent: () => import('./features/criacao-campanha/criacao-campanha').then((m) => m.CriacaoCampanha),
+        loadComponent: () => import('./features/criacao-campanha/criacao-campanha').then((m) => m.CriacaoCampanhaComponent),
     },
     {
         path: 'dashboard',

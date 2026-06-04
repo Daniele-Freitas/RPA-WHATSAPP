@@ -1,5 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import * as Papa from 'papaparse';
+import { Component, output } from '@angular/core';
 
 @Component({
   selector: 'app-file-upload',
@@ -8,25 +7,20 @@ import * as Papa from 'papaparse';
 })
 export class FileUploadComponent {
   
-  @Output() arquivoLido = new EventEmitter<any[]>();
+  // Angular 17.3+: A nova forma de declarar saídas de dados
+  arquivoSelecionado = output<File>();
 
-  aoSelecionarArquivo(event: any) {
-    const arquivo: File = event.target.files[0];
+  aoSelecionarArquivo(event: Event) {
+    const input = event.target as HTMLInputElement;
     
-    if (arquivo) {
-      Papa.parse(arquivo, {
-        header: true, // Avisa que a primeira linha tem os nomes das colunas
-        skipEmptyLines: true, // Ignora linhas em branco no final do CSV
-        complete: (resultado) => {
-          console.log('CSV Lido com sucesso:', resultado.data);
-          // Emite os dados formatados em JSON para o CriacaoCampanhaComponent
-          this.arquivoLido.emit(resultado.data);
-        },
-        error: (erro) => {
-          console.error('Erro ao ler CSV:', erro);
-          alert('Erro ao processar o arquivo CSV.');
-        }
-      });
+    if (input.files && input.files.length > 0) {
+      const arquivo = input.files[0];
+      
+      if (arquivo.name.endsWith('.csv')) {
+        this.arquivoSelecionado.emit(arquivo);
+      } else {
+        alert('Por favor, selecione um arquivo .csv válido.');
+      }
     }
   }
 }

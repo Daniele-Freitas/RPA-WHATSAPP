@@ -1,16 +1,29 @@
-<div class="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
+<div class="max-w-4xl mx-auto space-y-6">
   
-  <div class="max-w-4xl mx-auto space-y-6">
-    
-    <div class="text-center mb-10">
-      <h1 class="text-3xl font-extrabold text-gray-900">Nova Campanha de WhatsApp</h1>
-      <p class="mt-2 text-gray-600">Importe seus contatos e crie mensagens dinâmicas.</p>
-    </div>
-
+  @if (!dadosPreview()) {
     <div class="bg-white shadow rounded-lg p-6">
       <h2 class="text-lg font-medium text-gray-900 mb-4">1. Importar Contatos (CSV)</h2>
-      <app-file-upload></app-file-upload>
+      
+      <app-file-upload (arquivoSelecionado)="processarArquivo($event)"></app-file-upload>
+      
+      @if (carregando()) {
+        <div class="mt-4 text-center text-blue-600 font-medium">
+          Processando planilha no servidor...
+        </div>
+      }
     </div>
+  }
 
-    </div>
+  @if (dadosPreview()) {
+    <div class="bg-white shadow rounded-lg p-6">
+      <h2 class="text-lg font-medium text-gray-900 mb-4">2. Mapear Colunas</h2>
+      
+      <p class="text-sm text-gray-500 mb-4">
+        O arquivo <b>{{ arquivoAtual()?.name }}</b> tem {{ dadosPreview()!.colunas.length }} colunas. 
+        Defina qual delas é o número do WhatsApp.
+      </p>
+      
+      </div>
+  }
+
 </div>
