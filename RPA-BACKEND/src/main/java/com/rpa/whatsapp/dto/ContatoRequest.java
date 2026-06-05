@@ -1,6 +1,7 @@
 package com.rpa.whatsapp.dto;
 
 import java.util.Map;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,8 +15,8 @@ public class ContatoRequest {
   @Schema(example = "João")
   private String nome;
 
-  @Schema(example = "5511999999999", description = "Telefone no formato internacional sem sinais")
-  private String telefone;
+  @Schema(description = "Lista de telefones do contato (pode conter múltiplas colunas do CSV)", example = "[\"5511999999999\", \"5511888888888\"]")
+  private List<String> telefones;
 
   @Schema(description = "Mapa de variáveis personalizáveis (nome da variável -> coluna CSV)")
   private Map<String, String> variaveis;

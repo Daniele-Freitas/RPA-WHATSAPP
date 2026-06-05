@@ -41,10 +41,10 @@ public class CsvContatoParser {
       List<Map<String, String>> amostras = new ArrayList<>();
       int total = 0;
 
-      for (CSVRecord record : parser) {
+      for (CSVRecord line : parser) {
         total++;
         if (amostras.size() < limite) {
-          amostras.add(mapearLinha(record, colunas));
+          amostras.add(mapearLinha(line, colunas));
         }
       }
 
@@ -75,8 +75,8 @@ public class CsvContatoParser {
       validarColunas(parser.getHeaderMap(), config);
 
       List<ContatoRequest> contatos = new ArrayList<>();
-      for (CSVRecord record : parser) {
-        contatos.add(mapearContato(record, config));
+      for (CSVRecord line : parser) {
+        contatos.add(mapearContato(line, config));
       }
 
       return contatos;
@@ -86,7 +86,13 @@ public class CsvContatoParser {
   }
 
   private void validarColunas(Map<String, Integer> headers, CampanhaCsvImportRequest config) {
-    validarColunaObrigatoria(headers, config.getColunaTelefone(), "colunaTelefone");
+    if (config.getColunaTelefones() == null || config.getColunaTelefones().isEmpty()) {
+      throw new IllegalArgumentException("Campo obrigatório: colunaTelefones");
+    }
+
+    for (String colunaTel : config.getColunaTelefones()) {
+      validarColunaObrigatoria(headers, colunaTel, "colunaTelefones");
+    }
 
     if (config.getColunaNome() != null && !config.getColunaNome().isBlank()) {
       validarColunaObrigatoria(headers, config.getColunaNome(), "colunaNome");
@@ -112,42 +118,49 @@ public class CsvContatoParser {
     }
   }
 
-  private ContatoRequest mapearContato(CSVRecord record, CampanhaCsvImportRequest config) {
-    String telefone = obterValor(record, config.getColunaTelefone());
-    String nome = obterValor(record, config.getColunaNome());
+  private ContatoRequest mapearContato(CSVRecord line, CampanhaCsvImportRequest config) {
+    List<String> telefones = new ArrayList<>();
+    for (String colunaTel : config.getColunaTelefones()) {
+      String valor = obterValor(line, colunaTel);
+      if (valor != null) {
+        telefones.add(valor);
+      }
+    }
+
+    String nome = obterValor(line, config.getColunaNome());
 
     Map<String, String> variaveis = new HashMap<>();
     if (config.getColunasVariaveis() != null) {
       for (Map.Entry<String, String> entry : config.getColunasVariaveis().entrySet()) {
-        String valor = obterValor(record, entry.getValue());
+        String valor = obterValor(line, entry.getValue());
         if (valor != null) {
           variaveis.put(entry.getKey(), valor);
         }
       }
     }
 
-    return new ContatoRequest(nome, telefone, variaveis);
+    return new ContatoRequest(nome, telefones, variaveis);
   }
 
-  private Map<String, String> mapearLinha(CSVRecord record, List<String> colunas) {
+  private Map<String, String> mapearLinha(CSVRecord line, List<String> colunas) {
     Map<String, String> linha = new LinkedHashMap<>();
     for (String coluna : colunas) {
-      linha.put(coluna, obterValor(record, coluna));
+      linha.put(coluna, obterValor(line, coluna));
     }
 
     return linha;
   }
 
-  private String obterValor(CSVRecord record, String coluna) {
+  private String obterValor(CSVRecord line, String coluna) {
     if (coluna == null || coluna.isBlank()) {
       return null;
     }
 
-    if (!record.isMapped(coluna)) {
+    if (!line.isMapped(coluna)) {
       return null;
     }
 
-    String valor = record.get(coluna);
+    String valor = line.get(coluna);
     if (valor == null) {
       return null;
     }

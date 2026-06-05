@@ -17,8 +17,8 @@ public class CampanhaCsvImportRequest {
   @Schema(example = "Olá {{primeiro_nome}}, aproveite nossa promoção")
   private String mensagem;
 
-  @Schema(example = "Telefone", description = "Nome da coluna que contém o telefone")
-  private String colunaTelefone;
+  @Schema(description = "Nomes das colunas que podem conter telefones (aceita múltiplas colunas)", example = "[\"Telefone\", \"Telefone2\"]")
+  private java.util.List<String> colunaTelefones;
 
   @Schema(example = "Nome", description = "Nome da coluna que contém o nome")
   private String colunaNome;
