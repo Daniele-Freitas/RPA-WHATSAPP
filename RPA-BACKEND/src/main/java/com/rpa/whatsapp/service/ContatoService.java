@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.rpa.whatsapp.domain.Campanha;
 import com.rpa.whatsapp.domain.Contato;
 import com.rpa.whatsapp.domain.StatusEnvio;
+import com.rpa.whatsapp.domain.Telefone;
 import com.rpa.whatsapp.dto.ContatoRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -20,29 +21,65 @@ public class ContatoService {
 
   public List<String> listarTelefonesInvalidos(List<ContatoRequest> contatos) {
     List<String> invalidos = new ArrayList<>();
-    for (ContatoRequest contato : contatos) {
-      String telefone = contato == null ? null : contato.getTelefone();
-      if (!telefoneService.isValido(telefone)) {
-        invalidos.add(telefone == null ? "" : telefone);
-      }
+    if (contatos == null) {
+      return invalidos;
     }
 
+    for (ContatoRequest contato : contatos) {
+      if (contato.getTelefones() != null) {
+        for (String telefone : contato.getTelefones()) {
+          if (!telefoneService.isValido(telefone)) {
+            invalidos.add(telefone == null ? "" : telefone);
+          }
+        }
+      }
+    }
     return invalidos;
   }
 
-  public Contato criarContato(ContatoRequest request, Campanha campanha) {
-    String telefone = telefoneService.sanitizar(request.getTelefone());
-    String nome = normalizarNome(request.getNome());
+  public Contato criarContato(ContatoRequest request, Campanha campanha){    
+    if (request == null || request.getTelefones() == null || request.getTelefones().isEmpty()) {
+      return null;
+    }
 
+    String nome = normalizarNome(request.getNome());
     Map<String, String> variaveis = montarVariaveis(request.getVariaveis(), nome);
 
-    return Contato.builder()
+    // 1. Criamos a entidade Pai (Contato) primeiro, SEM os telefones
+    Contato contato = Contato.builder()
         .nome(nome)
-        .telefone(telefone)
-        .variaveis(variaveis)
+        .variaveis(new HashMap<>(variaveis))
         .statusEnvio(StatusEnvio.PENDENTE)
         .campanha(campanha)
         .build();
+
+    // 2. Preparamos a lista que vai guardar as entidades Filhas (Telefone)
+    List<Telefone> entidadesTelefone = new ArrayList<>();
+
+    // 3. Fazemos o loop na lista de strings que veio do JSON
+    for (String telefoneStr : request.getTelefones()) {
+      if (telefoneService.isValido(telefoneStr)) {
+        String telefoneSanitizado = telefoneService.sanitizar(telefoneStr);
+
+        // Criamos a entidade filha e já vinculamos o pai nela (Relacionamento Bidirecional)
+        Telefone telefoneEntidade = Telefone.builder()
+            .numero(telefoneSanitizado) 
+            .contato(contato) 
+            .build();
+
+        entidadesTelefone.add(telefoneEntidade);
+      }
+    }
+
+    // 4. Se nenhum telefone for válido, evitamos salvar um contato fantasma
+    if (entidadesTelefone.isEmpty()) {
+        return null; 
+    }
+
+    // 5. Entregamos a lista de filhos para o pai
+    contato.setTelefones(entidadesTelefone);
+
+    return contato;
   }
 
   private Map<String, String> montarVariaveis(Map<String, String> variaveisRequest, String nome) {

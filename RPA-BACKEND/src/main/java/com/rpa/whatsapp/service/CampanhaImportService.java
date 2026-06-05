@@ -2,7 +2,9 @@ package com.rpa.whatsapp.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects; // <-- Import para o filtro
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // <-- Import para a transação
 import org.springframework.web.multipart.MultipartFile;
 import com.rpa.whatsapp.domain.Campanha;
 import com.rpa.whatsapp.domain.CampanhaStatus;
@@ -15,6 +17,7 @@ import com.rpa.whatsapp.repository.ContatoRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@SuppressWarnings("null") 
 @RequiredArgsConstructor
 public class CampanhaImportService {
 
@@ -24,6 +27,7 @@ public class CampanhaImportService {
   private final RabbitMQSender rabbitMQSender;
   private final CsvContatoParser csvContatoParser;
 
+  @Transactional // <-- Garante que não teremos dados pela metade no banco
   public CampanhaCsvImportResponse importar(MultipartFile arquivo, CampanhaCsvImportRequest request) {
     List<ContatoRequest> contatos = csvContatoParser.parse(arquivo, request);
 
@@ -45,10 +49,14 @@ public class CampanhaImportService {
 
     Campanha campanhaSalva = campanhaRepository.save(campanha);
 
-    List<Contato> contatosSalvos = contatoRepository.saveAll(
-        contatos.stream()
-            .map(contato -> contatoService.criarContato(contato, campanhaSalva))
-            .toList());
+    // 1. Primeiro geramos e guardamos a lista numa variável
+    List<Contato> contatosParaSalvar = contatos.stream()
+        .map(contato -> contatoService.criarContato(contato, campanhaSalva))
+        .filter(Objects::nonNull)
+        .toList();
+
+    // 2. Depois passamos a variável para o repositório
+    List<Contato> contatosSalvos = contatoRepository.saveAll(contatosParaSalvar);
 
     rabbitMQSender.publishContatos(contatosSalvos);
 
