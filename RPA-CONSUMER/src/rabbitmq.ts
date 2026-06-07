@@ -36,14 +36,15 @@ export async function startConsumer(config: ConsumerConfig): Promise<void> {
 function parsePayload(raw: string): ContatoMessage {
   const data = JSON.parse(raw) as Partial<ContatoMessage>;
 
-  if (!data.contatoId || !data.telefone || !data.mensagem) {
-    throw new Error("Payload inválido: contatoId, telefone e mensagem são obrigatórios");
+  // Validação atualizada para aceitar o array "telefones"
+  if (!data.contatoId || !data.telefones || !Array.isArray(data.telefones) || data.telefones.length === 0 || !data.mensagem) {
+    throw new Error("Payload inválido: contatoId, telefones (array não vazio) e mensagem são obrigatórios");
   }
 
   return {
     contatoId: data.contatoId,
     campanhaId: data.campanhaId ?? "",
-    telefone: data.telefone,
+    telefones: data.telefones, // Recebe a lista priorizada do Spring Boot
     mensagem: data.mensagem
   };
 }

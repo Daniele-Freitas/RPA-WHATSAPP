@@ -1,7 +1,7 @@
 export interface ContatoMessage {
   contatoId: string;
   campanhaId: string;
-  telefone: string;
+  telefones: string[];
   mensagem: string;
 }
 
