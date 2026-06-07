@@ -1,1 +1,77 @@
-<p>editor-mensagem works!</p>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  
+  <div class="flex flex-col space-y-4">
+    
+    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+        Clique para inserir variáveis dinâmicas:
+      </p>
+      <div class="flex flex-wrap gap-2">
+        
+        @for (variavel of variaveisSistema; track variavel) {
+          <button 
+            (click)="inserirVariavel(variavel)"
+            class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full hover:bg-blue-200 transition-colors">
+            + {{ variavel }}
+          </button>
+        }
+        
+        @for (coluna of colunasDisponiveis(); track coluna) {
+          <button 
+            (click)="inserirVariavel(coluna)"
+            class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full hover:bg-green-200 transition-colors">
+            + {{ coluna }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div>
+      <label for="corpoMensagem" class="block text-sm font-medium text-gray-700 mb-1">
+        Corpo da Mensagem
+      </label>
+      <textarea 
+        id="corpoMensagem"
+        #textAreaMsg
+        [ngModel]="textoMensagem()"
+        (ngModelChange)="textoMensagem.set($event)"
+        rows="8"
+        class="w-full border-gray-300 rounded-md shadow-sm p-3 border focus:ring-green-500 focus:border-green-500 resize-y"
+        placeholder="Olá {{variaveisSistema[1]}}, tudo bem?">
+      </textarea>
+      <p class="text-xs text-gray-500 mt-1">Dica: Use *asteriscos* para negrito e _anderlines_ para itálico no WhatsApp.</p>
+    </div>
+
+    <button 
+      (click)="confirmarMensagem()"
+      class="mt-4 w-full bg-green-600 text-white font-medium py-3 px-4 rounded-md hover:bg-green-700 transition-colors shadow-sm">
+      Finalizar e Criar Campanha
+    </button>
+  </div>
+
+  <div class="flex justify-center items-start">
+    <div class="relative w-full max-w-sm bg-[#EFEAE2] rounded-3xl shadow-xl border-8 border-gray-900 overflow-hidden h-[500px] flex flex-col">
+      
+      <div class="bg-[#075E54] text-white px-4 py-3 flex items-center gap-3 shadow-md z-10">
+        <div class="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0"></div>
+        <div>
+          <p class="font-semibold text-sm">Preview do Cliente</p>
+          <p class="text-xs text-green-100">online</p>
+        </div>
+      </div>
+
+      <div class="flex-1 p-4 overflow-y-auto bg-cover" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');">
+        
+        <div class="bg-white rounded-lg rounded-tl-none p-2 shadow-sm max-w-[85%] relative inline-block text-sm text-gray-800 break-words whitespace-pre-wrap">
+          {{ mensagemPreview() }}
+          
+          <span class="float-right text-[10px] text-gray-400 mt-2 ml-4">
+            12:00
+          </span>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+</div>

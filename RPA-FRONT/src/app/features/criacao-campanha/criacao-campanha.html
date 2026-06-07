@@ -1,29 +1,62 @@
-<div class="max-w-4xl mx-auto space-y-6">
-  
-  @if (!dadosPreview()) {
+<div class="max-w-5xl mx-auto space-y-6 p-4">
+
+  @if (mensagemSucesso()) {
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+      <strong class="font-bold">Sucesso! </strong>
+      <span class="block sm:inline">{{ mensagemSucesso() }}</span>
+    </div>
+  }
+
+  @if (!dadosPreview() && !mensagemSucesso()) {
     <div class="bg-white shadow rounded-lg p-6">
       <h2 class="text-lg font-medium text-gray-900 mb-4">1. Importar Contatos (CSV)</h2>
       
       <app-file-upload (arquivoSelecionado)="processarArquivo($event)"></app-file-upload>
       
       @if (carregando()) {
-        <div class="mt-4 text-center text-blue-600 font-medium">
-          Processando planilha no servidor...
+        <div class="mt-4 text-center text-blue-600 font-medium animate-pulse">
+          Lendo planilha no servidor...
         </div>
       }
     </div>
   }
 
-  @if (dadosPreview()) {
+  @if (dadosPreview() && !configMapeamento() && !mensagemSucesso()) {
     <div class="bg-white shadow rounded-lg p-6">
-      <h2 class="text-lg font-medium text-gray-900 mb-4">2. Mapear Colunas</h2>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-medium text-gray-900">2. Mapear Colunas</h2>
+        <button (click)="resetarFluxo()" class="text-sm text-red-600 hover:underline">Cancelar</button>
+      </div>
       
       <p class="text-sm text-gray-500 mb-4">
-        O arquivo <b>{{ arquivoAtual()?.name }}</b> tem {{ dadosPreview()!.colunas.length }} colunas. 
-        Defina qual delas é o número do WhatsApp.
+        O arquivo <b>{{ arquivoAtual()?.name }}</b> possui {{ dadosPreview()!.colunas.length }} colunas.
       </p>
       
+      <app-mapeamento-colunas 
+        [dadosPreview]="dadosPreview()!"
+        (configMapeamento)="avancarParaMensagem($event)">
+      </app-mapeamento-colunas>
+    </div>
+  }
+
+  @if (configMapeamento() && !mensagemSucesso()) {
+    <div class="bg-white shadow rounded-lg p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-medium text-gray-900">3. Escrever Mensagem</h2>
+        <button (click)="configMapeamento.set(null)" class="text-sm text-blue-600 hover:underline">Voltar ao Mapeamento</button>
       </div>
+
+      <app-editor-mensagem
+        [colunasDisponiveis]="dadosPreview()!.colunas"
+        (mensagemFinalizada)="finalizarCampanha($event)">
+      </app-editor-mensagem>
+
+      @if (carregando()) {
+        <div class="mt-6 text-center text-green-600 font-medium animate-pulse">
+          Enfileirando mensagens no servidor...
+        </div>
+      }
+    </div>
   }
 
 </div>

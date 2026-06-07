@@ -1,6 +1,6 @@
 export interface ContatoRequest {
   nome: string;
-  telefone: string;
+  telefones: string[];
   variaveis: Record<string, string>;
 }
 
@@ -12,10 +12,9 @@ export interface CreateCampanhaRequest {
 
 export interface CampanhaCsvPreviewResponse {
   colunas: string[];
-  amostras: Record<string, string>[]; 
-  //(um mapa chave-valor genérico) um objeto com qualquer nome de propriedade, 
-  // desde que o valor dessa propriedade seja uma string. 
-  // Isso encaixa perfeitamente com os dados dinâmicos das colunas do CSV.
+  amostras: Record<string, string>[];
+  colunaTelefoneSugerida?: string;
+  colunaNomeSugerida?: string;
 }
 
 export interface CampanhaCsvImportResponse {

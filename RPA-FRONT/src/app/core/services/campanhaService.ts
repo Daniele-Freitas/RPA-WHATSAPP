@@ -31,12 +31,22 @@ export class CampanhaService {
   }
 
   // NOVO: Envia o arquivo definitivo junto com as configurações de mapeamento
-  importarCsv(arquivo: File, config: any): Observable<CampanhaCsvImportResponse> {
-    const formData = new FormData();
-    formData.append('arquivo', arquivo);
-    // Transformamos o objeto de configuração em string para enviar junto com o arquivo
-    formData.append('config', new Blob([JSON.stringify(config)], { type: 'application/json' }));
+  importarCsv(arquivo: File, requestPayload: any) {
+  const formData = new FormData();
+  
+  // 1. Anexa o arquivo normalmente
+  formData.append('arquivo', arquivo);
 
-    return this.http.post<CampanhaCsvImportResponse>(`${this.RESOURCE_URL}/importar-csv`, formData);
-  }
+  // 2. Empacota o JSON de configuração num Blob forçando o UTF-8
+  const jsonBlob = new Blob(
+    [JSON.stringify(requestPayload)], 
+    { type: 'application/json; charset=utf-8' }
+  );
+  
+  // 3. Anexa o Blob informando que se trata da 'request'
+  formData.append('request', jsonBlob);
+
+  // Envia o POST (o Angular HttpClient define o header multipart automaticamente)
+  return this.http.post<CampanhaCsvImportResponse>(`${this.RESOURCE_URL}/importar-csv`, formData);
+}
 }
