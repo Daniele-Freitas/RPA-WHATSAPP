@@ -139,3 +139,6 @@ rabbitmq_data/
 # Lock files (opcional - descomente se quiser versioná-los)
 # package-lock.json
 # pom.xml.versionsBackup
+
+# WhatsApp Web session data (opcional - descomente se quiser versioná-los)
+sessao_wpp/

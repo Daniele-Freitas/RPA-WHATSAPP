@@ -56,12 +56,8 @@ public class CampanhaImportController {
   })
   public ResponseEntity<CampanhaCsvImportResponse> importarCsv(
       @RequestPart("arquivo") @Parameter(description = "Arquivo CSV contendo contatos") MultipartFile arquivo,
-      @RequestPart("config") @Parameter(description = "Config JSON com nome, mensagem e mapeamentos (CampanhaCsvImportRequest)") String configJson) {
-    
+      @RequestPart("request") @Parameter(description = "Config JSON com nome, mensagem e mapeamentos (CampanhaCsvImportRequest)") CampanhaCsvImportRequest request) {
     try {
-      // Parse JSON string para objeto
-      CampanhaCsvImportRequest request = objectMapper.readValue(configJson, CampanhaCsvImportRequest.class);
-      
       if (request == null || request.getNome() == null || request.getNome().isBlank()) {
         return ResponseEntity.badRequest()
             .body(new CampanhaCsvImportResponse(null, 0, 0, List.of("Nome da campanha é obrigatório")));
@@ -81,7 +77,7 @@ public class CampanhaImportController {
     } catch (Exception ex) {
       return ResponseEntity.badRequest()
           .body(new CampanhaCsvImportResponse(null, 0, 0, 
-              List.of("Erro ao parsear JSON: " + ex.getMessage())));
+              List.of("Erro na importação: " + ex.getMessage()))); 
     }
   }
 }
