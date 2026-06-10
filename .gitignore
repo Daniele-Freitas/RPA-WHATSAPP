@@ -142,3 +142,6 @@ rabbitmq_data/
 
 # WhatsApp Web session data (opcional - descomente se quiser versioná-los)
 sessao_wpp/
+
+*.csv
+*.xlsx
