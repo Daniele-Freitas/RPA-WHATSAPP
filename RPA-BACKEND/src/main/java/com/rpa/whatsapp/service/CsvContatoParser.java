@@ -2,18 +2,18 @@ package com.rpa.whatsapp.service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+
 import com.rpa.whatsapp.dto.CampanhaCsvImportRequest;
 import com.rpa.whatsapp.dto.CsvPreviewResponse;
 import com.rpa.whatsapp.dto.ContatoRequest;
@@ -21,23 +21,32 @@ import com.rpa.whatsapp.dto.ContatoRequest;
 @Service
 public class CsvContatoParser {
 
-  public CsvPreviewResponse preview(MultipartFile arquivo, int maxAmostras) {
-    if (arquivo == null || arquivo.isEmpty()) {
-      throw new IllegalArgumentException("Arquivo CSV é obrigatório");
+  public CsvPreviewResponse preview(String conteudoCsv, int maxAmostras) {
+    if (conteudoCsv == null || conteudoCsv.isBlank()) {
+      throw new IllegalArgumentException("O conteúdo CSV é obrigatório e não pode estar vazio");
     }
 
     int limite = maxAmostras <= 0 ? 5 : maxAmostras;
 
-    try (BufferedReader reader = new BufferedReader(
-        new InputStreamReader(arquivo.getInputStream(), StandardCharsets.UTF_8));
-        CSVParser parser = CSVFormat.DEFAULT.builder()
-            .setHeader()
-            .setSkipHeaderRecord(true)
-            .setTrim(true)
-            .build()
-            .parse(reader)) {
+    // Em vez de ler um ficheiro físico, lemos diretamente a String em memória
+    try (BufferedReader reader = new BufferedReader(new StringReader(conteudoCsv));
+         CSVParser parser = CSVFormat.DEFAULT.builder()
+             .setHeader()
+             .setSkipHeaderRecord(true)
+             .setTrim(true)
+             .build()
+             .parse(reader)) {
 
       List<String> colunas = new ArrayList<>(parser.getHeaderMap().keySet());
+      
+      // VALIDAÇÃO CONTRA FALTA DE CABEÇALHO (Fail Fast)
+      for (String coluna : colunas) {
+        // Se o nome da coluna tem 8 ou mais números seguidos, é um contacto disfarçado de título
+        if (coluna.replaceAll("\\D", "").length() >= 8) {
+          throw new IllegalArgumentException("Parece que o seu ficheiro não tem uma linha de cabeçalho com os nomes das colunas (Ex: Nome, Telefone). O primeiro contacto (" + coluna + ") foi lido como título. Por favor, adicione os títulos na primeira linha.");
+        }
+      }
+
       List<Map<String, String>> amostras = new ArrayList<>();
       int total = 0;
 
@@ -50,27 +59,27 @@ public class CsvContatoParser {
 
       return new CsvPreviewResponse(colunas, amostras, total);
     } catch (IOException ex) {
-      throw new IllegalArgumentException("Falha ao ler arquivo CSV", ex);
+      throw new IllegalArgumentException("Falha ao ler o conteúdo CSV", ex);
     }
   }
 
-  public List<ContatoRequest> parse(MultipartFile arquivo, CampanhaCsvImportRequest config) {
-    if (arquivo == null || arquivo.isEmpty()) {
-      throw new IllegalArgumentException("Arquivo CSV é obrigatório");
+  public List<ContatoRequest> parse(String conteudoCsv, CampanhaCsvImportRequest config) {
+    if (conteudoCsv == null || conteudoCsv.isBlank()) {
+      throw new IllegalArgumentException("O conteúdo CSV é obrigatório");
     }
 
     if (config == null) {
-      throw new IllegalArgumentException("Configuração do CSV é obrigatória");
+      throw new IllegalArgumentException("A configuração do CSV é obrigatória");
     }
 
-    try (BufferedReader reader = new BufferedReader(
-        new InputStreamReader(arquivo.getInputStream(), StandardCharsets.UTF_8));
-        CSVParser parser = CSVFormat.DEFAULT.builder()
-            .setHeader()
-            .setSkipHeaderRecord(true)
-            .setTrim(true)
-            .build()
-            .parse(reader)) {
+    // Em vez de ler um ficheiro físico, lemos diretamente a String em memória
+    try (BufferedReader reader = new BufferedReader(new StringReader(conteudoCsv));
+         CSVParser parser = CSVFormat.DEFAULT.builder()
+             .setHeader()
+             .setSkipHeaderRecord(true)
+             .setTrim(true)
+             .build()
+             .parse(reader)) {
 
       validarColunas(parser.getHeaderMap(), config);
 
@@ -81,7 +90,7 @@ public class CsvContatoParser {
 
       return contatos;
     } catch (IOException ex) {
-      throw new IllegalArgumentException("Falha ao ler arquivo CSV", ex);
+      throw new IllegalArgumentException("Falha ao ler o conteúdo CSV", ex);
     }
   }
 
@@ -114,7 +123,7 @@ public class CsvContatoParser {
     }
 
     if (!headers.containsKey(coluna)) {
-      throw new IllegalArgumentException("Coluna não encontrada no CSV: " + coluna);
+      throw new IllegalArgumentException("Coluna não encontrada no ficheiro: " + coluna);
     }
   }
 

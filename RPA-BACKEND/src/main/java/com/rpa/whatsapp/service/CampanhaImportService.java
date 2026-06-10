@@ -1,5 +1,6 @@
 package com.rpa.whatsapp.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects; // <-- Import para o filtro
@@ -26,10 +27,12 @@ public class CampanhaImportService {
   private final ContatoService contatoService;
   private final RabbitMQSender rabbitMQSender;
   private final CsvContatoParser csvContatoParser;
+  private final FileConverterService fileConverterService;
 
   @Transactional // <-- Garante que não teremos dados pela metade no banco
-  public CampanhaCsvImportResponse importar(MultipartFile arquivo, CampanhaCsvImportRequest request) {
-    List<ContatoRequest> contatos = csvContatoParser.parse(arquivo, request);
+  public CampanhaCsvImportResponse importar(MultipartFile arquivo, CampanhaCsvImportRequest request) throws IOException, IllegalArgumentException {
+    String conteudoCsv = fileConverterService.converterParaCsv(arquivo);
+    List<ContatoRequest> contatos = csvContatoParser.parse(conteudoCsv, request);
 
     if (contatos.isEmpty()) {
       throw new IllegalArgumentException("CSV sem contatos válidos");
