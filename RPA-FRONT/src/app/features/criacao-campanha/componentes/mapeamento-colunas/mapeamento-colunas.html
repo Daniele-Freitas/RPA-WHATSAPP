@@ -1,70 +1,154 @@
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="flex flex-col xl:flex-row gap-8 lg:gap-12">
   
-  <div class="space-y-4">
-    <div>
-      <label for="selectTelefone" class="block text-sm font-medium text-gray-700 mb-1">
-        Qual coluna contém o WhatsApp? <span class="text-red-500">*</span>
+  <div class="w-full xl:w-5/12 flex flex-col space-y-7">
+    
+    @if (errosValidacao().length > 0) {
+      <div class="bg-red-50/80 border-l-4 border-red-500 p-4 rounded-r-xl shadow-sm animate-fade-in backdrop-blur-sm">
+        <div class="flex items-start">
+          <div class="flex-shrink-0 mt-0.5">
+            <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3 flex flex-col space-y-1.5">
+            @for (erro of errosValidacao(); track erro) {
+              <p class="text-sm text-red-800 font-medium leading-relaxed">{{ erro }}</p>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="group">
+      <label for="telPrincipal" class="block text-sm font-bold text-slate-800 mb-2 tracking-tight">
+        Coluna do WhatsApp Principal <span class="text-red-500" title="Obrigatório">*</span>
       </label>
-      <select 
-        id="selectTelefone"
-        [value]="colunaTelefoneSelecionada()"
-        (change)="atualizarSelecao('telefone', $event)"
-        class="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-        <option value="" disabled>Selecione uma coluna...</option>
-        @for (coluna of dadosPreview().colunas; track coluna) {
-          <option [value]="coluna">{{ coluna }}</option>
-        }
-      </select>
+      <div class="relative">
+        <select 
+          id="telPrincipal"
+          (change)="atualizarSelecao('telPrincipal', $event)"
+          [class.border-red-400]="errosValidacao().length > 0 && !colunaTelefonePrincipal()"
+          [class.focus:ring-red-500]="errosValidacao().length > 0 && !colunaTelefonePrincipal()"
+          class="appearance-none block w-full rounded-xl border-slate-200 bg-slate-50 text-slate-700 shadow-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm p-3.5 transition-all duration-200 cursor-pointer hover:border-blue-300">
+          
+          <option value="" [selected]="!colunaTelefonePrincipal()" disabled>Selecione a coluna principal...</option>
+          
+          @for (coluna of dadosPreview().colunas; track coluna) {
+            <option [value]="coluna" [selected]="coluna === colunaTelefonePrincipal()">
+              {{ coluna }}
+            </option>
+          }
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+      </div>
     </div>
 
     <div>
-      <label for="selectNome" class="block text-sm font-medium text-gray-700 mb-1">
-        Qual coluna contém o Nome? (Opcional)
-      </label>
-      <select 
-        id="selectNome"
-        [value]="colunaNomeSelecionada()"
-        (change)="atualizarSelecao('nome', $event)"
-        class="w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-        <option value="">Não usar nome</option>
+      <div class="mb-2">
+        <label class="block text-sm font-bold text-slate-800 tracking-tight">Telefones Reservas</label>
+        <p class="text-xs text-slate-500 mt-0.5">Fallback opcional. O robô usará caso o principal falhe.</p>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1 -mx-1 custom-scrollbar">
         @for (coluna of dadosPreview().colunas; track coluna) {
-          <option [value]="coluna">{{ coluna }}</option>
+          <label 
+            class="flex items-center p-3 border rounded-xl cursor-pointer transition-all duration-200 relative overflow-hidden group"
+            [class.border-blue-500]="colunasTelefonesReserva().includes(coluna)"
+            [class.bg-blue-50]="colunasTelefonesReserva().includes(coluna)"
+            [class.shadow-sm]="colunasTelefonesReserva().includes(coluna)"
+            [class.ring-1]="colunasTelefonesReserva().includes(coluna)"
+            [class.ring-blue-500]="colunasTelefonesReserva().includes(coluna)"
+            [class.border-slate-200]="!colunasTelefonesReserva().includes(coluna)"
+            [class.bg-white]="!colunasTelefonesReserva().includes(coluna)"
+            [class.hover:border-blue-300]="!colunasTelefonesReserva().includes(coluna)"
+            [class.hover:shadow-sm]="!colunasTelefonesReserva().includes(coluna)">
+            
+            <input 
+              type="checkbox"
+              class="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition-colors cursor-pointer"
+              [checked]="colunasTelefonesReserva().includes(coluna)"
+              (change)="toggleReserva(coluna, $event)">
+            <span class="ml-2.5 text-sm font-medium text-slate-700 truncate select-none group-hover:text-blue-700 transition-colors" [title]="coluna">{{ coluna }}</span>
+          </label>
         }
-      </select>
+      </div>
     </div>
 
-    <button 
-      (click)="confirmarMapeamento()"
-      class="mt-4 w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
-      Confirmar Mapeamento
-    </button>
+    <div class="group">
+      <label for="nome" class="block text-sm font-bold text-slate-800 mb-2 tracking-tight">
+        Coluna de Nome <span class="text-xs font-normal text-slate-500">(Para personalizar mensagens)</span>
+      </label>
+      <div class="relative">
+        <select 
+          id="nome"
+          (change)="atualizarSelecao('nome', $event)"
+          class="appearance-none block w-full rounded-xl border-slate-200 bg-slate-50 text-slate-700 shadow-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm p-3.5 transition-all duration-200 cursor-pointer hover:border-blue-300">
+          
+          <option value="" [selected]="!colunaNomeSelecionada()">Não personalizar com o nome</option>
+          
+          @for (coluna of dadosPreview().colunas; track coluna) {
+            <option [value]="coluna" [selected]="coluna === colunaNomeSelecionada()">
+              {{ coluna }}
+            </option>
+          }
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-2">
+      <button 
+        (click)="confirmarMapeamento()"
+        class="w-full flex justify-center items-center px-6 py-3.5 border border-transparent text-sm font-bold rounded-xl shadow-md shadow-blue-500/20 text-white bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 cursor-pointer active:scale-[0.98]">
+        <span>Avançar para Mensagem</span>
+        <svg class="ml-2 -mr-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+      </button>
+    </div>
   </div>
 
-  <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 overflow-x-auto">
-    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-      Amostra dos Dados (Primeiras Linhas)
-    </h3>
-    
-    <table class="min-w-full divide-y divide-gray-200 text-sm">
-      <thead class="bg-gray-100">
-        <tr>
-          @for (coluna of dadosPreview().colunas; track coluna) {
-            <th class="px-3 py-2 text-left font-medium text-gray-700">{{ coluna }}</th>
-          }
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200 bg-white">
-        @for (linha of dadosPreview().amostras; track $index) {
-          <tr>
-            @for (coluna of dadosPreview().colunas; track coluna) {
-              <td class="px-3 py-2 text-gray-600 truncate max-w-xs">
-                {{ linha[coluna] || '-' }}
-              </td>
+  <div class="w-full xl:w-7/12 mt-4 xl:mt-0">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm shadow-slate-200/50 overflow-hidden h-full flex flex-col transition-all hover:shadow-md">
+      
+      <div class="bg-gradient-to-r from-slate-50 to-white px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-slate-800 tracking-tight">Amostra de Contatos</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Lendo {{ dadosPreview().amostras.length }} linhas do seu arquivo.</p>
+        </div>
+        <div class="bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-md border border-blue-100">
+          {{ dadosPreview().colunas.length }} Colunas
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto flex-1 custom-scrollbar">
+        <table class="min-w-full text-sm text-left">
+          <thead class="text-xs text-slate-500 uppercase bg-slate-50/50 sticky top-0">
+            <tr>
+              @for (coluna of dadosPreview().colunas; track coluna) {
+                <th scope="col" class="px-5 py-3.5 font-bold tracking-wider border-b border-slate-200">
+                  {{ coluna }}
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            @for (linha of dadosPreview().amostras; track $index) {
+              <tr class="hover:bg-slate-50/80 transition-colors duration-150 group">
+                @for (coluna of dadosPreview().colunas; track coluna) {
+                  <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap group-hover:text-slate-900 transition-colors">
+                    {{ linha[coluna] || '-' }}
+                  </td>
+                }
+              </tr>
             }
-          </tr>
-        }
-      </tbody>
-    </table>
+          </tbody>
+        </table>
+      </div>
+      
+    </div>
   </div>
 
 </div>

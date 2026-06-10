@@ -7,7 +7,7 @@ import { MapeamentoColunasComponent } from './componentes/mapeamento-colunas/map
 
 @Component({
   selector: 'app-criacao-campanha',
-  imports: [FileUploadComponent, EditorMensagemComponent,MapeamentoColunasComponent],
+  imports: [FileUploadComponent, EditorMensagemComponent,MapeamentoColunasComponent], 
   templateUrl: './criacao-campanha.html',
   styleUrl: './criacao-campanha.scss',
   standalone: true
@@ -17,12 +17,12 @@ export class CriacaoCampanhaComponent {
 
   arquivoAtual = signal<File | null>(null);
   dadosPreview = signal<CampanhaCsvPreviewResponse | null>(null);
-  configMapeamento = signal<{ colunaTelefone: string, colunaNome: string } | null>(null);
+  configMapeamento = signal<{ colunasTelefone: string[], colunaNome: string } | null>(null);
   
   carregando = signal<boolean>(false);
   mensagemSucesso = signal<string | null>(null);
 
-  constructor(private campanhaService: CampanhaService) {}
+  constructor(private readonly campanhaService: CampanhaService) {}
 
   processarArquivo(arquivo: File) {
     this.arquivoAtual.set(arquivo);
@@ -41,7 +41,7 @@ export class CriacaoCampanhaComponent {
     });
   }
 
-  avancarParaMensagem(config: { colunaTelefone: string, colunaNome: string }) {
+  avancarParaMensagem(config: { colunasTelefone: string[], colunaNome: string }) {
     this.configMapeamento.set(config);
   }
 
@@ -59,7 +59,7 @@ export class CriacaoCampanhaComponent {
     const requestPayload = {
       nome: `Campanha - ${arquivo.name} - ${new Date().toLocaleDateString()}`,
       mensagem: textoMensagem,
-      colunaTelefones: [mapeamento.colunaTelefone],
+      colunaTelefones: mapeamento.colunasTelefone,
       colunaNome: mapeamento.colunaNome
     };
 
@@ -84,3 +84,4 @@ export class CriacaoCampanhaComponent {
     this.mensagemSucesso.set(null);
   }
 }
+

@@ -1,77 +1,106 @@
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
   
-  <div class="flex flex-col space-y-4">
+  <div class="w-full lg:w-1/2 flex flex-col">
     
-    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-        Clique para inserir variáveis dinâmicas:
-      </p>
-      <div class="flex flex-wrap gap-2">
-        
-        @for (variavel of variaveisSistema; track variavel) {
-          <button 
-            (click)="inserirVariavel(variavel)"
-            class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full hover:bg-blue-200 transition-colors">
-            + {{ variavel }}
-          </button>
-        }
-        
-        @for (coluna of colunasDisponiveis(); track coluna) {
-          <button 
-            (click)="inserirVariavel(coluna)"
-            class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full hover:bg-green-200 transition-colors">
-            + {{ coluna }}
-          </button>
-        }
+    <div class="mb-6 space-y-4">
+      
+      <div>
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Automáticas</h3>
+        <div class="flex flex-wrap gap-2">
+          @for (sys of variaveisSistema; track sys.chave) {
+            <button 
+              (mousedown)="$event.preventDefault(); inserirVariavel(sys.chave)"
+              class="inline-flex items-center px-3 py-1.5 rounded bg-slate-100 text-slate-700 text-sm font-medium border border-slate-200 hover:bg-slate-200 transition-colors">
+              <svg class="w-4 h-4 mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              {{ sys.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Dados do Contato</h3>
+        <div class="flex flex-wrap gap-2">
+          @for (coluna of colunasDisponiveis(); track coluna) {
+            <button 
+              (mousedown)="$event.preventDefault(); inserirVariavel(coluna)"
+              class="inline-flex items-center px-3 py-1.5 rounded bg-blue-50 text-blue-700 text-sm font-medium border border-blue-100 hover:bg-blue-100 transition-colors">
+              <svg class="w-4 h-4 mr-1.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+              {{ coluna }}
+            </button>
+          }
+        </div>
       </div>
     </div>
 
-    <div>
-      <label for="corpoMensagem" class="block text-sm font-medium text-gray-700 mb-1">
-        Corpo da Mensagem
-      </label>
-      <textarea 
-        id="corpoMensagem"
-        #textAreaMsg
-        [ngModel]="textoMensagem()"
-        (ngModelChange)="textoMensagem.set($event)"
-        rows="8"
-        class="w-full border-gray-300 rounded-md shadow-sm p-3 border focus:ring-green-500 focus:border-green-500 resize-y"
-        placeholder="Olá {{variaveisSistema[1]}}, tudo bem?">
-      </textarea>
-      <p class="text-xs text-gray-500 mt-1">Dica: Use *asteriscos* para negrito e _anderlines_ para itálico no WhatsApp.</p>
+    <div class="flex-1 flex flex-col mb-6">
+      <label class="block text-sm font-bold text-slate-800 mb-2">Corpo da Mensagem</label>
+      
+      <div class="border border-slate-300 rounded-xl overflow-hidden bg-white shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all flex flex-col">
+        
+        <div class="bg-slate-50 border-b border-slate-200 px-3 py-2 flex items-center space-x-1">
+          <button (mousedown)="$event.preventDefault(); formatarTexto('bold')" class="p-1.5 text-slate-600 hover:bg-slate-200 hover:text-slate-900 rounded transition-colors font-bold w-8 h-8 flex items-center justify-center" title="Negrito">B</button>
+          <button (mousedown)="$event.preventDefault(); formatarTexto('italic')" class="p-1.5 text-slate-600 hover:bg-slate-200 hover:text-slate-900 rounded transition-colors italic font-serif w-8 h-8 flex items-center justify-center" title="Itálico">I</button>
+          <button (mousedown)="$event.preventDefault(); formatarTexto('strikeThrough')" class="p-1.5 text-slate-600 hover:bg-slate-200 hover:text-slate-900 rounded transition-colors line-through w-8 h-8 flex items-center justify-center" title="Tachado">S</button>
+        </div>
+
+        <div 
+          #editorRef
+          contenteditable="true"
+          (input)="onInput()"
+          (blur)="onInput()"
+          class="w-full min-h-[220px] p-4 outline-none resize-none text-slate-800 text-[15px] leading-relaxed cursor-text"
+          style="white-space: pre-wrap; word-break: break-word;">
+        </div>
+      </div>
     </div>
 
     <button 
-      (click)="confirmarMensagem()"
-      class="mt-4 w-full bg-green-600 text-white font-medium py-3 px-4 rounded-md hover:bg-green-700 transition-colors shadow-sm">
-      Finalizar e Criar Campanha
+      (click)="confirmar()"
+      class="w-full flex justify-center items-center px-6 py-4 border border-transparent text-sm font-bold rounded-xl shadow-md text-white bg-blue-600 hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all active:scale-[0.98]">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+      Salvar e Iniciar Disparos
     </button>
   </div>
 
-  <div class="flex justify-center items-start">
-    <div class="relative w-full max-w-sm bg-[#EFEAE2] rounded-3xl shadow-xl border-8 border-gray-900 overflow-hidden h-[500px] flex flex-col">
-      
-      <div class="bg-[#075E54] text-white px-4 py-3 flex items-center gap-3 shadow-md z-10">
-        <div class="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0"></div>
-        <div>
-          <p class="font-semibold text-sm">Preview do Cliente</p>
-          <p class="text-xs text-green-100">online</p>
-        </div>
-      </div>
+  <div class="w-full lg:w-1/2 flex flex-col justify-center items-center">
+    
+    <div class="w-[320px] h-[600px] bg-slate-900 rounded-[2.5rem] p-3 shadow-2xl relative border-4 border-slate-900 flex flex-col">
+      <div class="absolute top-0 inset-x-0 h-6 bg-slate-900 rounded-b-3xl w-40 mx-auto z-20"></div>
 
-      <div class="flex-1 p-4 overflow-y-auto bg-cover" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');">
-        
-        <div class="bg-white rounded-lg rounded-tl-none p-2 shadow-sm max-w-[85%] relative inline-block text-sm text-gray-800 break-words whitespace-pre-wrap">
-          {{ mensagemPreview() }}
-          
-          <span class="float-right text-[10px] text-gray-400 mt-2 ml-4">
-            12:00
-          </span>
+      <div class="bg-[#efeae2] w-full h-full rounded-[2rem] overflow-hidden flex flex-col relative">
+        <div class="absolute inset-0 opacity-40 mix-blend-multiply" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-size: contain;"></div>
+
+        <div class="bg-[#008069] px-4 py-3 text-white flex items-center shadow-md z-10 pt-8">
+          <svg class="w-5 h-5 mr-2 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center overflow-hidden shrink-0">
+            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-sm font-bold leading-tight">Visão do Cliente</h4>
+            <p class="text-[10px] text-white/80">Baseado no 1º contato da lista</p>
+          </div>
         </div>
-        
+
+        <div class="flex-1 p-4 overflow-y-auto z-10 flex flex-col mt-4">
+          @if (conteudoHtml()) {
+            <div class="self-start max-w-[85%] bg-white text-slate-800 rounded-lg rounded-tl-none p-2.5 shadow-sm relative mb-2">
+              <div class="absolute top-0 -left-2 w-0 h-0 border-t-8 border-t-white border-l-8 border-l-transparent"></div>
+              
+              <p class="text-[14.5px] leading-relaxed break-words" [innerHTML]="previewFormatado"></p>
+              
+              <div class="text-right mt-1">
+                <span class="text-[10px] text-slate-400 font-medium">{{ currentHour() }}</span>
+              </div>
+            </div>
+          } @else {
+            <div class="flex flex-col items-center justify-center h-full opacity-60">
+              <svg class="w-10 h-10 text-slate-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+              <p class="text-xs font-medium text-slate-600 text-center">Sua mensagem <br> aparecerá aqui</p>
+            </div>
+          }
+        </div>
       </div>
     </div>
   </div>
-
 </div>
