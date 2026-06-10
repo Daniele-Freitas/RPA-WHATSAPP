@@ -15,7 +15,7 @@ export class CampanhaService {
   
   private readonly RESOURCE_URL = `${environment.apiUrl}/campanhas`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   // Endpoint manual sem import por Csv para integrações futuras/manuais
   criarCampanhaManual(request: CreateCampanhaRequest): Observable<any> {
@@ -32,21 +32,21 @@ export class CampanhaService {
 
   // NOVO: Envia o arquivo definitivo junto com as configurações de mapeamento
   importarCsv(arquivo: File, requestPayload: any) {
-  const formData = new FormData();
-  
-  // 1. Anexa o arquivo normalmente
-  formData.append('arquivo', arquivo);
+    const formData = new FormData();
+    
+    // 1. Anexa o arquivo normalmente
+    formData.append('arquivo', arquivo);
 
-  // 2. Empacota o JSON de configuração num Blob forçando o UTF-8
-  const jsonBlob = new Blob(
-    [JSON.stringify(requestPayload)], 
-    { type: 'application/json; charset=utf-8' }
-  );
-  
-  // 3. Anexa o Blob informando que se trata da 'request'
-  formData.append('request', jsonBlob);
+    // 2. Empacota o JSON de configuração num Blob forçando o UTF-8
+    const jsonBlob = new Blob(
+      [JSON.stringify(requestPayload)], 
+      { type: 'application/json; charset=utf-8' }
+    );
+    
+    // 3. Anexa o Blob informando que se trata da 'request'
+    formData.append('request', jsonBlob);
 
-  // Envia o POST (o Angular HttpClient define o header multipart automaticamente)
-  return this.http.post<CampanhaCsvImportResponse>(`${this.RESOURCE_URL}/importar-csv`, formData);
-}
+    // Envia o POST (o Angular HttpClient define o header multipart automaticamente)
+    return this.http.post<CampanhaCsvImportResponse>(`${this.RESOURCE_URL}/importar-csv`, formData);
+  }
 }
