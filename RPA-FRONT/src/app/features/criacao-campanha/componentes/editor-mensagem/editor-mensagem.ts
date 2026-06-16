@@ -97,32 +97,46 @@ export class EditorMensagemComponent {
     return '';
   }
 
-  // 4. PREVIEW REAL: Mostra os dados reais da linha 1 da planilha do cliente
   get previewFormatado(): SafeHtml {
     const htmlAtual = this.conteudoHtml();
-    
-    if (!htmlAtual || htmlAtual.trim() === '<br>') {
+    if (!htmlAtual || htmlAtual.trim() === '<br>' || htmlAtual.trim() === '') {
       return this.sanitizer.bypassSecurityTrustHtml('<em class="text-slate-400 text-sm">Sua mensagem aparecerá aqui...</em>');
     }
 
-    // Criamos um DOM virtual invisível para manipular os nós sem afetar o editor
     const divTemporaria = document.createElement('div');
     divTemporaria.innerHTML = htmlAtual;
-
-    // Encontra todos os Pills visuais e substitui pelos dados reais da amostra!
     const pills = divTemporaria.querySelectorAll('span[data-var]');
+
     pills.forEach(pill => {
-      const chave = pill.getAttribute('data-var') || '';
+      const chaveOriginal = pill.getAttribute('data-var') || '';
+      const chaveNormalizada = chaveOriginal.trim().toLowerCase().replace(/[^a-z0-9]/g, '');      
+      let valorReal: string | undefined;
+
+      // FORMA À PROVA DE FALHAS:
+      // Verificamos a chave normalizada. Não importa se no HTML está 'saudacao_tempo' 
+      // ou 'Saudacao Tempo', nossa lógica vai encontrar.
       
-      let valorReal = this.amostra()[chave]; // Pega o dado real da linha 1!
+      if (chaveNormalizada === 'saudacaotempo') {
+        valorReal = this.obterSaudacao();
+      } 
+      else if (chaveNormalizada === 'primeironome') {
+        valorReal = this.obterPrimeiroNome();
+      } 
+      else {
+        // Busca na planilha
+        const chavesAmostra = Object.keys(this.amostra());
+        const chaveEncontrada = chavesAmostra.find(k => 
+          k.trim().toLowerCase().replace(/[^a-z0-9]/g, '') === chaveNormalizada
+        );
+        
+        if (chaveEncontrada) {
+          valorReal = this.amostra()[chaveEncontrada];
+        }
+      }
 
-      // Tratamento para as automáticas do sistema
-      if (chave === 'saudacao_tempo') valorReal = this.obterSaudacao();
-      else if (chave === 'primeiro_nome') valorReal = this.obterPrimeiroNome();
-
-      // CORREÇÃO AQUI: Cria um nó de texto puro, sem classes, para herdar a formatação exata do texto ao redor
-      const textoReal = document.createTextNode(valorReal || '[Vazio]');
-      pill.replaceWith(textoReal);
+      // Fallback final
+      const textoFinal = valorReal !== undefined ? valorReal : `[${chaveOriginal}]`;
+      pill.replaceWith(document.createTextNode(textoFinal));
     });
 
     return this.sanitizer.bypassSecurityTrustHtml(divTemporaria.innerHTML);
