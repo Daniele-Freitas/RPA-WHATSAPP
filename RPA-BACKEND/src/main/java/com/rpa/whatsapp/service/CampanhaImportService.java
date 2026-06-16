@@ -2,10 +2,11 @@ package com.rpa.whatsapp.service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.LocalTime; // <-- Novo Import necessário
 import java.util.List;
-import java.util.Objects; // <-- Import para o filtro
+import java.util.Objects;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // <-- Import para a transação
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.rpa.whatsapp.domain.Campanha;
 import com.rpa.whatsapp.domain.CampanhaStatus;
@@ -29,7 +30,7 @@ public class CampanhaImportService {
   private final CsvContatoParser csvContatoParser;
   private final FileConverterService fileConverterService;
 
-  @Transactional // <-- Garante que não teremos dados pela metade no banco
+  @Transactional 
   public CampanhaCsvImportResponse importar(MultipartFile arquivo, CampanhaCsvImportRequest request) throws IOException, IllegalArgumentException {
     String conteudoCsv = fileConverterService.converterParaCsv(arquivo);
     List<ContatoRequest> contatos = csvContatoParser.parse(conteudoCsv, request);
@@ -43,9 +44,21 @@ public class CampanhaImportService {
       return new CampanhaCsvImportResponse(null, contatos.size(), 0, telefonesInvalidos);
     }
 
+    // ==========================================
+    // INÍCIO DA LIMPEZA E SUBSTITUIÇÃO DA MENSAGEM
+    // ==========================================
+    String templateLimpo = request.getMensagem() != null ? request.getMensagem() : "";
+    
+    // 1. Remove o caractere invisível (Zero-Width Space) do Angular
+    templateLimpo = templateLimpo.replace("\u200b", "");
+    
+    // 2. Substitui a saudação pelo horário atual do servidor
+    templateLimpo = templateLimpo.replace("{{saudacao_tempo}}", obterSaudacao());
+    // ==========================================
+
     Campanha campanha = Campanha.builder()
         .nome(request.getNome())
-        .mensagemTemplate(request.getMensagem())
+        .mensagemTemplate(templateLimpo) // <-- Salvamos o template limpo e processado!
         .status(CampanhaStatus.PENDENTE)
         .dataCriacao(LocalDateTime.now())
         .build();
@@ -68,5 +81,13 @@ public class CampanhaImportService {
         contatos.size(),
         contatosSalvos.size(),
         List.of());
+  }
+
+  // Método auxiliar para decidir a saudação baseada na hora atual
+  private String obterSaudacao() {
+    int hora = LocalTime.now().getHour();
+    if (hora < 12) return "Bom dia";
+    if (hora < 18) return "Boa tarde";
+    return "Boa noite";
   }
 }
