@@ -114,8 +114,13 @@ Verifique se os containers estão rodando:
 ```bash
 docker-compose ps
 ```
+##  3.1 Rodar o consumer 
+```bash
+cd RPA-CONSUMER 
+npx tsx src/index.ts
+```
 
-### 3. Rodar o Backend
+### 3.2 Rodar o Backend
 
 #### Desenvolvimento
 ```bash
@@ -123,7 +128,17 @@ cd RPA-BACKEND
 mvn spring-boot:run
 ```
 
+### 3.2 Rodar o Front
+
+#### Desenvolvimento
+```bash
+cd RPA-FRONT
+npm start
+```
+
 A API estará disponível em: `http://localhost:8080`
+O Front estará disponível em: `http://localhost:4200`
+
 
 #### Produção
 ```bash
@@ -254,31 +269,6 @@ tail -f RPA-BACKEND/logs/app.log
 docker-compose logs -f backend
 ```
 
-## 📈 Endpoints da API
-
-### Campanhas
-
-#### Criar Campanha
-```http
-POST /api/campanhas
-Content-Type: application/json
-
-{
-  "nome": "Campanha Exemplo",
-  "contatos": [
-    {
-      "telefone": "5511999999999",
-      "mensagemFormatada": "Mensagem de teste"
-    }
-  ]
-}
-
-Response: 201 Created
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000"
-}
-```
-
 #### Endpoints em desenvolvimento
 - `GET /api/campanhas` - Listar campanhas
 - `GET /api/campanhas/{id}` - Consultar campanha
@@ -308,21 +298,6 @@ Response: 201 Created
 4. **Service:** Criar lógica em `service/` (opcional)
 5. **Controller:** Adicionar método no controller com comentário do endpoint
 
-**Sempre adicionar comentário com exemplo de requisição:**
-```java
-/**
- * POST /api/endpoint
- * 
- * Body:
- * {
- *   "campo": "valor"
- * }
- */
-@PostMapping
-public ResponseEntity<?> endpoint(@RequestBody Request request) {
-  // ...
-}
-```
 
 ## 📝 Logs
 
