@@ -1,4 +1,4 @@
-import { startConsumer } from "./rabbitmq.js";
+import { startConsumer } from "./rabbitmq";
 import { atualizarStatusContato } from "./status-client.js";
 import {
   createWhatsAppClient,
